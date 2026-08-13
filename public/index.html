@@ -1,0 +1,3852 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<title>太空行动</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; -webkit-user-select: none; user-select: none; }
+
+body {
+
+  background: #0a0a0a; color: #00f0ff; font-family: 'Orbitron', 'Microsoft YaHei', 'PingFang SC', monospace;
+
+  overflow: hidden; width: 100vw; height: 100vh; position: relative;
+
+}
+
+#gameCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+#uiLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+
+#uiLayer > * { pointer-events: auto; }
+
+.glass {
+
+  background: rgba(10,10,10,0.85); backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(0,240,255,0.4); border-radius: 12px;
+
+  box-shadow: 0 0 15px rgba(0,240,255,0.3), inset 0 0 20px rgba(0,240,255,0.05);
+
+}
+
+.glass-magenta {
+
+  background: rgba(10,10,10,0.85); backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,0,255,0.4); border-radius: 12px;
+
+  box-shadow: 0 0 15px rgba(255,0,255,0.3), inset 0 0 20px rgba(255,0,255,0.05);
+
+}
+
+.glass-red {
+
+  background: rgba(10,10,10,0.85); backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255,49,49,0.4); border-radius: 12px;
+
+  box-shadow: 0 0 15px rgba(255,49,49,0.3), inset 0 0 20px rgba(255,49,49,0.05);
+
+}
+
+.neon-text {
+
+  text-shadow: 0 0 5px #00f0ff, 0 0 10px #00f0ff, 0 0 20px rgba(0,240,255,0.5);
+
+  color: #00f0ff;
+
+}
+
+.neon-magenta {
+
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px rgba(255,0,255,0.5);
+
+  color: #ff00ff;
+
+}
+
+.neon-red {
+
+  text-shadow: 0 0 5px #ff3131, 0 0 10px #ff3131, 0 0 20px rgba(255,49,49,0.5);
+
+  color: #ff3131;
+
+}
+
+.btn {
+
+  padding: 12px 24px; font-family: 'Orbitron', monospace; font-size: 14px;
+
+  background: rgba(0,240,255,0.1); color: #00f0ff; border: 1px solid rgba(0,240,255,0.5);
+
+  border-radius: 8px; cursor: pointer; transition: all 0.3s; text-transform: uppercase;
+
+  letter-spacing: 2px; position: relative; overflow: hidden;
+
+}
+
+.btn:hover {
+
+  background: rgba(0,240,255,0.25); box-shadow: 0 0 20px rgba(0,240,255,0.4);
+
+  transform: translateY(-2px);
+
+}
+
+.btn::before {
+
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+
+  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.2), transparent);
+
+  transition: left 0.5s;
+
+}
+
+.btn:hover::before { left: 100%; }
+
+.btn-magenta {
+
+  background: rgba(255,0,255,0.1); color: #ff00ff; border-color: rgba(255,0,255,0.5);
+
+}
+
+.btn-magenta:hover { background: rgba(255,0,255,0.25); box-shadow: 0 0 20px rgba(255,0,255,0.4); }
+
+.btn-red {
+
+  background: rgba(255,49,49,0.1); color: #ff3131; border-color: rgba(255,49,49,0.5);
+
+}
+
+.btn-red:hover { background: rgba(255,49,49,0.25); box-shadow: 0 0 20px rgba(255,49,49,0.4); }
+
+input[type="text"] {
+
+  background: rgba(10,10,10,0.8); border: 1px solid rgba(0,240,255,0.4);
+
+  color: #00f0ff; padding: 12px 16px; font-family: 'Orbitron', monospace;
+
+  border-radius: 8px; outline: none; font-size: 16px;
+
+  box-shadow: 0 0 10px rgba(0,240,255,0.1); width: 100%;
+
+}
+
+input[type="text"]:focus {
+
+  border-color: #00f0ff; box-shadow: 0 0 20px rgba(0,240,255,0.3);
+
+}
+
+/* 大厅 */
+
+#lobbyScreen {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+
+  z-index: 100;
+
+}
+
+#lobbyScreen h1 {
+
+  font-size: 42px; margin-bottom: 10px; letter-spacing: 8px;
+
+  background: linear-gradient(135deg, #00f0ff, #ff00ff, #b300ff);
+
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+
+  filter: drop-shadow(0 0 10px rgba(0,240,255,0.5));
+
+}
+
+#lobbyScreen .subtitle { font-size: 14px; color: rgba(0,240,255,0.6); margin-bottom: 40px; letter-spacing: 4px; }
+
+.lobby-panel { width: 90%; max-width: 420px; padding: 30px; }
+
+.lobby-input-group { margin-bottom: 20px; }
+
+.lobby-input-group label { display: block; margin-bottom: 8px; font-size: 12px; color: rgba(0,240,255,0.7); letter-spacing: 2px; }
+
+.lobby-buttons { display: flex; gap: 12px; margin-top: 24px; }
+
+.lobby-buttons .btn { flex: 1; }
+
+/* 房间 */
+
+#roomScreen {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  display: none; flex-direction: column; padding: 20px;
+
+  background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+
+  z-index: 100;
+
+}
+
+#roomHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+#roomCode { font-size: 28px; letter-spacing: 6px; }
+
+#playerList { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; flex: 1; overflow-y: auto; }
+
+.player-card {
+
+  padding: 16px; text-align: center; border-radius: 10px;
+
+  background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2);
+
+  transition: all 0.3s;
+
+}
+
+.player-card.ready { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+
+.player-card .emoji { font-size: 32px; margin-bottom: 8px; }
+
+.player-card .name { font-size: 14px; color: #fff; }
+
+.player-card .companion { font-size: 11px; color: rgba(179,0,255,0.8); margin-top: 4px; }
+
+/* 伙伴选择 */
+
+#partnerSelect {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+
+  background: rgba(10,10,10,0.95); z-index: 110; padding: 20px;
+
+}
+
+#partnerGrid {
+
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+
+  max-width: 800px; width: 100%; margin-top: 20px;
+
+}
+
+.partner-card {
+
+  padding: 20px 10px; text-align: center; cursor: pointer;
+
+  border: 1px solid rgba(0,240,255,0.3); border-radius: 12px;
+
+  background: rgba(0,240,255,0.05); transition: all 0.3s;
+
+}
+
+.partner-card:hover { transform: translateY(-4px); border-color: #00f0ff; box-shadow: 0 0 20px rgba(0,240,255,0.3); }
+
+.partner-card.taken { opacity: 0.3; pointer-events: none; border-color: #333; }
+
+.partner-card.selected { border-color: #ff00ff; box-shadow: 0 0 20px rgba(255,0,255,0.4); background: rgba(255,0,255,0.1); }
+
+.partner-card .p-name { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+
+.partner-card .p-desc { font-size: 10px; color: rgba(0,240,255,0.6); line-height: 1.4; }
+
+/* HUD */
+
+#hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+
+#hud > * { pointer-events: auto; }
+
+#taskPanel {
+
+  position: absolute; top: 12px; left: 12px; width: 220px; padding: 14px;
+
+  font-size: 12px; max-height: 280px; overflow-y: auto;
+
+}
+
+#taskPanel h3 { font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+#taskPanel .task-item { padding: 6px 0; border-bottom: 1px solid rgba(0,240,255,0.1); display: flex; align-items: center; gap: 6px; }
+
+#taskPanel .task-item.done { text-decoration: line-through; color: rgba(0,240,255,0.3); }
+
+#taskPanel .task-arrow { color: #ff00ff; font-size: 10px; }
+
+#chargeDisplay { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(0,240,255,0.2); }
+
+#publicProgress { width: 100%; height: 6px; background: rgba(0,240,255,0.1); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+
+#publicProgressBar { height: 100%; background: linear-gradient(90deg, #00f0ff, #b300ff); width: 0%; transition: width 0.5s; }
+
+#minimap {
+
+  position: absolute; top: 12px; right: 12px; width: 120px; height: 120px;
+
+  border-radius: 50%; overflow: hidden; border: 2px solid rgba(0,240,255,0.5);
+
+  box-shadow: 0 0 15px rgba(0,240,255,0.3);
+
+}
+
+#minimapCanvas { width: 100%; height: 100%; }
+
+#oxygenBar {
+
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+
+  padding: 8px 20px; font-size: 18px; font-weight: 700; display: none;
+
+  background: rgba(255,49,49,0.2); border: 1px solid rgba(255,49,49,0.6);
+
+  color: #ff3131; border-radius: 20px;
+
+}
+
+/* 摇杆 */
+
+#joystick {
+
+  position: absolute; bottom: 100px; left: 60px; width: 120px; height: 120px;
+
+  border-radius: 50%; border: 2px solid rgba(0,240,255,0.4);
+
+  background: rgba(0,240,255,0.05); display: none;
+
+}
+
+#joystickKnob {
+
+  position: absolute; top: 50%; left: 50%; width: 50px; height: 50px;
+
+  border-radius: 50%; background: rgba(255,0,255,0.6);
+
+  transform: translate(-50%, -50%); box-shadow: 0 0 15px rgba(255,0,255,0.5);
+
+  border: 2px solid #ff00ff;
+
+}
+
+/* 功能按钮 */
+
+#actionButtons {
+
+  position: absolute; bottom: 80px; right: 20px;
+
+  display: flex; flex-direction: column; gap: 12px; display: none;
+
+}
+
+.action-btn {
+
+  width: 64px; height: 64px; border-radius: 12px;
+
+  display: flex; align-items: center; justify-content: center;
+
+  font-size: 24px; cursor: pointer; transition: all 0.2s;
+
+  background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.4);
+
+  box-shadow: 0 0 10px rgba(0,240,255,0.2);
+
+}
+
+.action-btn:active { transform: scale(0.9); }
+
+.action-btn.kill { background: rgba(255,49,49,0.2); border-color: rgba(255,49,49,0.6); display: none; }
+
+.action-btn.ability { background: rgba(179,0,255,0.2); border-color: rgba(179,0,255,0.6); }
+
+.action-btn.report { background: rgba(255,200,0,0.2); border-color: rgba(255,200,0,0.6); }
+
+.action-btn.vent { background: rgba(0,240,255,0.15); border-color: rgba(0,240,255,0.5); display: none; }
+
+.action-btn.sabotage { background: rgba(255,49,49,0.15); border-color: rgba(255,49,49,0.5); display: none; }
+
+.action-btn.task { background: rgba(0,240,255,0.15); border-color: rgba(0,240,255,0.5); }
+
+/* 任务QTE */
+
+#taskOverlay {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  background: rgba(10,10,10,0.9); z-index: 50;
+
+  display: none; align-items: center; justify-content: center;
+
+}
+
+#taskWindow {
+
+  width: 90%; max-width: 400px; padding: 30px; position: relative;
+
+}
+
+#taskWindow::before {
+
+  content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px;
+
+  background: linear-gradient(45deg, #00f0ff, #ff00ff, #b300ff, #00f0ff);
+
+  border-radius: 14px; z-index: -1; opacity: 0.5;
+
+  animation: borderRotate 3s linear infinite;
+
+}
+
+@keyframes borderRotate {
+
+  0% { filter: hue-rotate(0deg); }
+
+  100% { filter: hue-rotate(360deg); }
+
+}
+
+#taskTitle { font-size: 20px; text-align: center; margin-bottom: 20px; }
+
+#taskContent { min-height: 200px; }
+
+#taskTimer { position: absolute; top: 10px; right: 16px; font-size: 18px; color: #ff3131; }
+
+/* 清理风扇 */
+
+.fan-stains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px; }
+
+.stain {
+
+  width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle, #8B4513 30%, #654321 70%);
+
+  cursor: pointer; transition: all 0.2s; margin: 0 auto;
+
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+
+}
+
+.stain:hover { transform: scale(1.1); }
+
+.stain.cleaned { opacity: 0; transform: scale(0); }
+
+
+/* 刷卡 */
+
+.swipe-container { position: relative; height: 120px; background: rgba(0,240,255,0.05); border-radius: 8px; overflow: hidden; }
+
+.swipe-track { position: absolute; top: 40px; left: 10%; width: 80%; height: 40px; background: rgba(0,240,255,0.1); border-radius: 4px; }
+
+.swipe-green { position: absolute; top: 40px; left: 30%; width: 40%; height: 40px; background: rgba(0,255,100,0.3); border-radius: 4px; }
+
+.swipe-card { position: absolute; top: 35px; left: 10%; width: 50px; height: 50px; background: linear-gradient(135deg, #00f0ff, #b300ff); border-radius: 6px; cursor: grab; }
+
+/* 接线 */
+
+.wiring-container { display: flex; justify-content: space-between; padding: 20px; }
+
+.wiring-ports { display: flex; flex-direction: column; gap: 20px; }
+
+.wiring-port {
+
+  width: 40px; height: 40px; border-radius: 8px; cursor: pointer;
+
+  border: 2px solid; display: flex; align-items: center; justify-content: center;
+
+  font-size: 12px; font-weight: bold;
+
+}
+
+.wiring-line { position: absolute; height: 3px; background: currentColor; transform-origin: left center; pointer-events: none; }
+
+/* 密码 */
+
+.password-container { display: flex; justify-content: center; gap: 16px; padding: 30px; }
+
+.password-digit{
+
+  width: 60px; height: 80px; background: rgba(0,240,255,0.1); border: 2px solid rgba(0,240,255,0.4);
+
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+
+  font-size: 36px; cursor: pointer; position: relative; overflow: hidden;
+
+}
+
+.password-digit .digit-scroll {
+
+  position: absolute; top: 0; left: 0; width: 100%; text-align: center;
+
+  transition: top 0.3s;
+
+}
+
+/* 天线 */
+
+.antenna-container { position: relative; width: 280px; height: 280px; margin: 0 auto; }
+
+.antenna-ring { position: absolute; border: 2px solid rgba(0,240,255,0.3); border-radius: 50%; }
+
+.antenna-target { position: absolute; width: 20px; height: 20px; background: #ff00ff; border-radius: 50%; box-shadow: 0 0 10px #ff00ff; }
+
+.antenna-cursor { position: absolute; width: 24px; height: 24px; border: 2px solid #00f0ff; border-radius: 50%; transform: translate(-50%, -50%); }
+
+/* 数据上传 */
+
+.upload-container { padding: 20px; }
+
+.upload-bar { width: 100%; height: 30px; background: rgba(0,240,255,0.1); border-radius: 15px; overflow: hidden; position: relative; }
+
+.upload-fill { height: 100%; background: linear-gradient(90deg, #00f0ff, #b300ff); width: 0%; transition: width 0.1s; }
+
+.upload-interference {
+
+  position: absolute; width: 40px; height: 100%; background: #ff3131; cursor: pointer;
+
+  border-radius: 4px; animation: interferenceMove 2s linear infinite;
+
+}
+
+@keyframes interferenceMove {
+
+  0% { left: -40px; }
+
+  100% { left: 100%; }
+
+}
+
+/* 会议 */
+
+#meetingOverlay {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  background: rgba(10,10,10,0.92); z-index: 60;
+
+  display: none; flex-direction: column; padding: 20px;
+
+}
+
+#meetingHeader { text-align: center; margin-bottom: 16px; }
+
+#meetingTimer { font-size: 32px; color: #ff3131; }
+
+#meetingPlayers { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; flex: 1; overflow-y: auto; margin-bottom: 16px; }
+
+.meeting-player {
+
+  padding: 12px; text-align: center; border-radius: 10px;
+
+  background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2);
+
+  cursor: pointer; transition: all 0.2s;
+
+}
+
+.meeting-player:hover { border-color: #00f0ff; }
+
+.meeting-player.voted { border-color: #ff00ff; box-shadow: 0 0 10px rgba(255,0,255,0.3); }
+
+.meeting-player.dead { opacity: 0.4; }
+
+.meeting-player .mp-emoji { font-size: 28px; }
+
+.meeting-player .mp-name { font-size: 12px; color: #fff; margin-top: 4px; }
+
+.meeting-player .mp-vote-btn {
+
+  margin-top: 8px; padding: 4px 12px; font-size: 11px;
+
+  background: rgba(0,240,255,0.2); border: 1px solid rgba(0,240,255,0.5);
+
+  color: #00f0ff; border-radius: 4px; cursor: pointer;
+
+}
+
+.meeting-player .mp-vote-btn:hover { background: rgba(0,240,255,0.4); }
+
+#meetingChat { height: 150px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); }
+
+.chat-msg { margin-bottom: 6px; font-size: 13px; }
+
+.chat-msg .chat-name { color: #00f0ff; font-weight: 700; margin-right: 6px; }
+
+.chat-msg.ghost { opacity: 0.6; }
+
+.chat-msg.ghost .chat-name { color: #b300ff; }
+
+#meetingInput { display: flex; gap: 8px; }
+
+#meetingInput input { flex: 1; }
+
+#skipVoteBtn { margin-top: 10px; text-align: center; }
+
+/* 内鬼聊天 */
+
+#impostorChat {
+
+  position: absolute; bottom: 160px; right: 20px; width: 260px; height: 200px;
+
+  display: none; flex-direction: column; z-index: 40;
+
+}
+
+#impostorChatHeader { padding: 8px 12px; font-size: 12px; border-bottom: 1px solid rgba(255,49,49,0.3); color: #ff3131; }
+
+#impostorChatBody { flex: 1; overflow-y: auto; padding: 8px; font-size: 12px; }
+
+#impostorChatInput { display: flex; padding: 8px; border-top: 1px solid rgba(255,49,49,0.3); }
+
+#impostorChatInput input { flex: 1; font-size: 12px; padding: 6px; }
+
+/* 淘汰选择 */
+
+#eliminationOverlay {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  background: rgba(10,10,10,0.95); z-index: 80;
+
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+
+}
+
+#eliminationOverlay h2 { font-size: 32px; margin-bottom: 40px; color: #ff3131; }
+
+.elimination-buttons { display: flex; gap: 20px; }
+
+.elimination-buttons .btn { padding: 16px 40px; font-size: 16px; }
+
+/* 观战 */
+
+#spectateHint {
+
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+
+  font-size: 24px; color: rgba(0,240,255,0.5); display: none; pointer-events: none;
+
+}
+
+#exitSpectateBtn {
+
+  position: absolute; top: 12px; right: 140px; padding: 8px 16px;
+
+  font-size: 12px; display: none;
+
+}
+
+  /* 游戏结束 */
+
+#gameOverOverlay {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  background: rgba(10,10,10,0.95); z-index: 90;
+
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+
+}
+
+#gameOverOverlay h1 { font-size: 48px; margin-bottom: 20px; }
+
+#gameOverStats { margin-top: 20px; text-align: center; }
+
+/* 警告 */
+
+#warningOverlay {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  pointer-events: none; z-index: 30; display: none;
+
+  box-shadow: inset 0 0 100px rgba(255,49,49,0.3);
+
+  animation: warningPulse 1s infinite;
+
+}
+
+@keyframes warningPulse {
+
+  0%, 100% { box-shadow: inset 0 0 100px rgba(255,49,49,0.3); }
+
+  50% { box-shadow: inset 0 0 150px rgba(255,49,49,0.6); }
+
+}
+
+/* 扫描线 */
+
+.scanlines {
+
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,240,255,0.03) 50%);
+
+  background-size: 100% 4px; pointer-events: none; z-index: 5;
+
+}
+
+/* 缩放按钮 */
+
+#zoomControls {
+
+  position: absolute; bottom: 20px; right: 20px;
+
+  display: flex; flex-direction: column; gap: 8px; z-index: 20;
+
+}
+
+.zoom-btn {
+
+  width: 36px; height: 36px; border-radius: 50%;
+
+  background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.4);
+
+  color: #00f0ff; font-size: 18px; display: flex; align-items: center; justify-content: center;
+
+  cursor: pointer;
+
+}
+
+@media (max-width: 600px) {
+
+  #partnerGrid { grid-template-columns: repeat(2, 1fr); }
+
+  #taskPanel { width: 160px; font-size: 10px; }
+
+  .action-btn { width: 52px; height: 52px; font-size: 20px; }
+
+  #joystick { width: 100px; height: 100px; bottom: 80px; left: 30px; }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div class="scanlines"></div>
+
+<!-- 大厅 -->
+
+<div id="lobbyScreen">
+
+  <h1>赛博朋克：伙伴附着</h1>
+
+  <div class="subtitle">CYBERPUNK COMPANION ATTACHMENT</div>
+
+  <div class="lobby-panel glass">
+
+    <div class="lobby-input-group">
+
+      <label>玩家名称</label>
+
+      <input type="text" id="playerName" placeholder="输入你的名字" maxlength="12" value="">
+
+    </div>
+
+    <div class="lobby-input-group">
+
+      <label>房间号 (6位数字)</label>
+
+      <input type="text" id="roomCodeInput" placeholder="留空创建新房" maxlength="6">
+
+    </div>
+
+    <div class="lobby-buttons">
+
+      <button class="btn" onclick="joinRoom()">加入房间</button>
+
+      <button class="btn btn-magenta" onclick="createRoom()">创建房间</button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 房间 -->
+
+<div id="roomScreen">
+
+  <div id="roomHeader">
+
+    <div id="roomCode" class="neon-text">------</div>
+
+    <button class="btn" id="startGameBtn" onclick="startGame()" style="display:none;">开始游戏</button>
+
+  </div>
+
+  <div id="playerList"></div>
+
+</div>
+
+<!-- 伙伴选择 -->
+
+<div id="partnerSelect">
+
+  <h2 class="neon-magenta">选择你的伙伴</h2>
+
+  <div id="partnerGrid"></div>
+
+  <div style="margin-top:20px;color:rgba(0,240,255,0.6);font-size:12px;">超时将随机分配</div>
+
+</div>
+
+<!-- HUD -->
+
+<div id="hud">
+
+  <div id="taskPanel" class="glass">
+
+    <h3>📋 当前任务</h3>
+
+    <div id="taskList"></div>
+
+    <div id="chargeDisplay">🔋 充能: <span id="chargeValue">0</span>/3</div>
+
+    <div id="publicProgress"><div id="publicProgressBar"></div></div>
+
+  </div>
+
+  <div id="minimap" class="glass">
+
+    <canvas id="minimapCanvas" width="120" height="120"></canvas>
+
+  </div>
+
+  <div id="oxygenBar" class="glass-red">⚠️ 氧气不足: <span id="oxygenValue">60</span>s</div>
+
+  <div id="joystick">
+
+    <div id="joystickKnob"></div>
+
+  </div>
+
+  <div id="actionButtons">
+
+    <div class="action-btn task" onclick="interactTask()">📋</div>
+
+    <div class="action-btn report" onclick="reportBody()">📢</div>
+
+    <div class="action-btn ability" onclick="useAbility()">✨</div>
+
+    <div class="action-btn kill" onclick="attemptKill()">🗡️</div>
+
+    <div class="action-btn vent" onclick="useVent()">🚇</div>
+
+    <div class="action-btn sabotage" onclick="sabotage()">⚡</div>
+
+  </div>
+
+  <div id="zoomControls">
+
+    <div class="zoom-btn" onclick="changeZoom(0.1)">+</div>
+
+    <div class="zoom-btn" onclick="changeZoom(-0.1)">-</div>
+
+  </div>
+
+  <button class="btn" id="exitSpectateBtn" onclick="exitSpectate()">退出观战</button>
+
+</div>
+
+<!-- 任务 -->
+
+<div id="taskOverlay">
+
+  <div id="taskWindow" class="glass">
+
+    <div id="taskTimer"></div>
+
+    <div id="taskTitle" class="neon-text"></div>
+
+    <div id="taskContent"></div>
+
+    <button class="btn" onclick="closeTask()" style="margin-top:20px;width:100%;">关闭</button>
+
+  </div>
+
+</div>
+
+<!-- 会议 -->
+
+<div id="meetingOverlay">
+
+  <div id="meetingHeader">
+
+    <div id="meetingTitle" class="neon-text" style="font-size:24px;">紧急会议</div>
+
+    <div id="meetingTimer">60</div>
+
+  </div>
+
+  <div id="meetingPlayers"></div>
+
+  <div id="meetingChat"></div>
+
+  <div id="meetingInput">
+
+    <input type="text" id="chatInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')sendChat()">
+
+    <button class="btn" onclick="sendChat()">发送</button>
+
+  </div>
+
+  <div id="skipVoteBtn">
+
+    <button class="btn" onclick="vote('skip')">跳过投票</button>
+
+  </div>
+
+</div>
+
+<!-- 内鬼聊天 -->
+
+<div id="impostorChat" class="glass-red">
+
+  <div id="impostorChatHeader">👥 内鬼频道</div>
+
+  <div id="impostorChatBody"></div>
+
+  <div id="impostorChatInput">
+
+    <input type="text" id="impostorChatText" placeholder="内鬼私聊..." onkeypress="if(event.key==='Enter')sendImpostorChat()">
+
+    <button class="btn btn-red" style="padding:6px 12px;font-size:11px;" onclick="sendImpostorChat()">发送</button>
+
+  </div>
+
+</div>
+
+<!-- 淘汰 -->
+
+<div id="eliminationOverlay">
+
+  <h2 class="neon-red">⚡ 你已被放逐 ⚡</h2>
+
+  <div class="elimination-buttons">
+
+    <button class="btn" onclick="chooseSpectate('spectate')">👁️ 观战</button>
+
+    <button class="btn btn-red" onclick="chooseSpectate('leave')">🚪 退出房间</button>
+
+  </div>
+
+</div>
+
+<!-- 游戏结束 -->
+
+<div id="gameOverOverlay">
+
+  <h1 id="winnerText"></h1>
+
+  <div id="gameOverStats"></div>
+
+  <button class="btn" onclick="returnToLobby()" style="margin-top:30px;">返回大厅</button>
+
+</div>
+
+<!-- 警告 -->
+
+<div id="warningOverlay"></div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+
+const canvas = document.getElementById('gameCanvas');
+
+const ctx = canvas.getContext('2d');
+
+const minimapCanvas = document.getElementById('minimapCanvas');
+
+const minimapCtx = minimapCanvas.getContext('2d');
+
+let socket = null;
+
+let gameState = null;
+
+let myId = null;
+
+let roomId = null;
+
+let players = {};
+
+let mapData = null;
+
+let tasks = [];
+
+let myTasks = [];
+
+let currentTask = null;
+
+let camera = { x: 0, y: 0, zoom: 1 };
+
+let joystick = { active: false, dx: 0, dy: 0, originX: 0, originY: 0 };
+
+let keys = {};
+
+let effects = [];
+
+let particles = [];
+
+let meetingActive = false;
+
+let taskTimer = null;
+
+let isSpectating = false;
+
+let impostorChatOpen = false;
+
+let timeStopActive = false;
+
+let sabotageActive = false;
+
+let oxygenActive = false;
+
+let lastTime = 0;
+
+let animationFrame = 0;
+
+const COLORS = {
+
+  cyan: '#00f0ff', magenta: '#ff00ff', purple: '#b300ff', red: '#ff3131',
+
+  dark: '#0a0a0a', grid: '#1a1a2e', wall: 'rgba(0,240,255,0.3)'
+
+};
+
+function resize() {
+
+  canvas.width = window.innerWidth;
+
+  canvas.height = window.innerHeight;
+
+}
+
+window.addEventListener('resize', resize);
+
+resize();
+
+function connect() {
+
+  socket = io();
+
+  socket.on('connect', () => {
+
+    myId = socket.id;
+
+  });
+
+  socket.on('room_created', ({ roomId: rid }) => {
+
+    roomId = rid;
+
+    document.getElementById('lobbyScreen').style.display = 'none';
+
+    document.getElementById('roomScreen').style.display = 'flex';
+
+    document.getElementById('roomCode').textContent = rid;
+
+    showRoom();
+
+  });
+
+  socket.on('join_success', ({ roomId: rid, players: plist, host }) => {
+
+    roomId = rid;
+
+    document.getElementById('lobbyScreen').style.display = 'none';
+
+    document.getElementById('roomScreen').style.display = 'flex';
+
+    document.getElementById('roomCode').textContent = rid;
+
+    if (host === myId) document.getElementById('startGameBtn').style.display = 'block';
+
+    updatePlayerList(plist);
+
+  });
+
+  socket.on('player_joined', ({ id, name }) => {
+
+    if (!players[id]) players[id] = { id, name, companion: null };
+
+    updateRoomList();
+
+  });
+
+  socket.on('player_left', ({ id }) => {
+
+    delete players[id];
+
+    updateRoomList();
+
+  });
+
+  socket.on('host_changed', ({ host }) => {
+
+    if (host === myId) document.getElementById('startGameBtn').style.display = 'block';
+
+    else document.getElementById('startGameBtn').style.display = 'none';
+
+  });
+
+  socket.on('partner_update', ({ playerId, companionId }) => {
+
+    if (players[playerId]) players[playerId].companion = companionId;
+
+    updateRoomList();
+
+  });
+
+  socket.on('game_start', ({ role, companion, emoji, players: plist, tasks: myTaskIds, allTasks, map }) => {
+
+    gameState = { role, companion, emoji, alive: true, ghost: false, eliminated: false, charge: 0 };
+
+    mapData = map;
+
+    tasks = allTasks;
+
+    myTasks = myTaskIds || [];
+
+    players = {};
+
+    plist.forEach(p => {
+
+      players[p.id] = { ...p, alive: true, ghost: false, eliminated: false, spectating: false };
+
+    });
+
+    document.getElementById('roomScreen').style.display = 'none';
+
+    document.getElementById('partnerSelect').style.display = 'none';
+
+    document.getElementById('hud').style.display = 'block';
+
+    document.getElementById('joystick').style.display = 'block';
+
+    document.getElementById('actionButtons').style.display = 'flex';
+
+    if (role === 'impostor') {
+
+      document.querySelector('.action-btn.kill').style.display = 'flex';
+
+      document.querySelector('.action-btn.vent').style.display = 'flex';
+
+      document.querySelector('.action-btn.sabotage').style.display = 'flex';
+
+      document.getElementById('impostorChat').style.display = 'flex';
+
+    }
+
+    updateTaskPanel();
+
+    requestAnimationFrame(gameLoop);
+
+  });
+
+  socket.on('player_moved', ({ id, x, y }) => {
+
+    if (players[id]) { players[id].x = x; players[id].y = y; }
+
+  });
+
+  socket.on('player_death', ({ playerId, method, killerId }) => {
+
+    if (players[playerId]) {
+
+      players[playerId].alive = false;
+
+      players[playerId].ghost = true;
+
+    }
+
+    if (playerId === myId) {
+
+      gameState.ghost = true;
+
+      gameState.alive = false;
+
+      showGhostMode();
+
+    }
+
+    addEffect('death', players[playerId]?.x || 400, players[playerId]?.y || 300);
+
+  });
+
+  socket.on('player_ejected', ({ playerId }) => {
+
+    if (players[playerId]) {
+
+      players[playerId].alive = false;
+
+      players[playerId].eliminated = true;
+
+      players[playerId].ghost = false;
+
+    }
+
+    if (playerId === myId) {
+
+      showElimination();
+
+    }
+
+  });
+
+  socket.on('effect_trigger', (data) => {
+
+    handleEffect(data);
+
+  });
+
+  socket.on('effect_end', ({ type }) => {
+
+    if (type === 'time_stop') timeStopActive = false;
+
+  });
+
+  socket.on('meeting_start', ({ type, reporterId, timer }) => {
+
+    meetingActive = true;
+
+    showMeeting(type, reporterId, timer);
+
+  });
+
+  socket.on('meeting_timer', ({ timer }) => {
+
+    document.getElementById('meetingTimer').textContent = timer;
+
+  });
+
+  socket.on('meeting_end', ({ ejected, tacticalTime }) => {
+
+    meetingActive = false;
+
+    hideMeeting();
+
+    if (ejected && players[ejected]) {
+
+      players[ejected].alive = false;
+
+      if (ejected === myId) showElimination();
+
+    }
+
+  });
+
+  socket.on('phase_change', ({ phase }) => {
+
+    
+    // 战术窗口结束
+
+  });
+
+  socket.on('vote_update', ({ playerId, voted }) => {
+
+    const el = document.querySelector('.meeting-player[data-id="' + playerId + '"]');
+
+    if (el) el.classList.add('voted');
+
+  });
+
+  socket.on('chat_message', (msg) => {
+
+    addChatMessage(msg);
+
+  });
+
+  socket.on('task_completed', ({ taskId, playerId }) => {
+
+    const task = tasks.find(t => t.id === taskId);
+
+    if (task) task.completed = true;
+
+    if (playerId === myId) {
+
+      gameState.charge = Math.min(3, gameState.charge + 1);
+
+      updateTaskPanel();
+
+    }
+
+  });
+
+  socket.on('public_task_complete', () => {
+
+    gameState.charge = Math.min(3, gameState.charge + 1);
+
+    updateTaskPanel();
+
+  });
+
+  socket.on('oxygen_update', ({ timer }) => {
+
+    document.getElementById('oxygenValue').textContent = timer;
+
+    if (timer <= 10) document.getElementById('oxygenBar').style.color = '#ff3131';
+
+  });
+
+  socket.on('sabotage_start', ({ type }) => {
+
+    sabotageActive = true;
+
+    if (type === 'oxygen') {
+
+      oxygenActive = true;
+
+      document.getElementById('oxygenBar').style.display = 'block';
+
+    }
+
+    if (gameState.role === 'crew') {
+
+      document.getElementById('warningOverlay').style.display = 'block';
+
+    }
+
+  });
+
+  socket.on('sabotage_fixed', ({ type }) => {
+
+    if (type === 'oxygen') {
+
+      oxygenActive = false;
+
+      document.getElementById('oxygenBar').style.display = 'none';
+
+    }
+
+    sabotageActive = false;
+
+    document.getElementById('warningOverlay').style.display = 'none';
+
+  });
+
+  socket.on('impostor_chat', ({ playerId, playerName, text }) => {
+
+    addImpostorChat(playerName, text);
+
+  });
+
+  socket.on('controlled', ({ attacker }) => {
+
+    showControlWarning();
+
+  });
+
+  socket.on('vent_sense_result', ({ detected, ventId }) => {
+
+    alert(detected ? '感应到异常数据流！' : '管道内无异常');
+
+  });
+
+  socket.on('check_result', ({ playerId, role }) => {
+
+    alert('查验结果: ' + (role === 'impostor' ? '内鬼！' : '船员'));
+
+  });
+
+  socket.on('charge_used', ({ charge }) => {
+
+    gameState.charge = charge;
+
+    updateTaskPanel();
+
+  });
+
+  socket.on('spectate_start', () => {
+
+    isSpectating = true;
+
+    document.getElementById('spectateHint').style.display = 'block';
+
+    document.getElementById('exitSpectateBtn').style.display = 'block';
+
+    document.getElementById('joystick').style.display = 'none';
+
+    document.getElementById('actionButtons').style.display = 'none';
+
+    document.getElementById('taskPanel').style.display = 'none';
+
+  });
+
+  socket.on('game_over', ({ winner, stats }) => {
+
+    showGameOver(winner, stats);
+
+  });
+
+  socket.on('reset_game', () => {
+
+    resetClient();
+
+  });
+
+  socket.on('left_room', () => {
+
+    resetClient();
+
+  });
+
+  socket.on('error', ({ msg }) => {
+
+    alert(msg);
+
+  });
+
+}
+
+function createRoom() {
+
+  const name = document.getElementById('playerName').value.trim() || '玩家' + Math.floor(Math.random() * 999);
+
+  if (!socket) connect();
+
+  socket.emit('create_room');
+
+  socket.once('room_created', () => {
+
+    socket.emit('join_room', { roomId, name });
+
+  });
+
+}
+
+function joinRoom() {
+
+  const name = document.getElementById('playerName').value.trim() || '玩家' + Math.floor(Math.random() * 999);
+
+  const code = document.getElementById('roomCodeInput').value.trim();
+
+  if (!code || code.length !== 6) return alert('请输入6位房间号');
+
+  if (!socket) connect();
+
+  socket.emit('join_room', { roomId: code, name });
+
+}
+
+function showRoom() {
+
+  updateRoomList();
+
+}
+
+function updatePlayerList(plist) {
+
+  players = {};
+
+  plist.forEach(p => players[p.id] = p);
+
+  updateRoomList();
+
+}
+
+function updateRoomList() {
+
+  const list = document.getElementById('playerList');
+
+  list.innerHTML = '';
+
+  Object.values(players).forEach(p => {
+
+    const card = document.createElement('div');
+
+    card.className = 'player-card' + (p.companion ? ' ready' : '');
+
+    const compName = getCompanionName(p.companion);
+
+    card.innerHTML = '<div class="emoji">' + (p.emoji || '👤') + '</div><div class="name">' + p.name + '</div>' + (compName ? '<div class="companion">' + compName + '</div>' : '');
+
+    list.appendChild(card);
+
+  });
+
+}
+
+function getCompanionName(id) {
+
+  const names = {
+      nightingale: '夜莺', pugelisi: '普格里斯', gouwen: '钩吻',
+
+    yuyu: '虞瑜', hewal: '赫瓦尔', xiu: '修',
+
+    luolan: '洛兰', yuansheng: '渊生', fengye: '风夜', yezhu: '夜主'
+
+  };
+
+  return names[id] || id;
+
+}
+
+function startGame() {
+
+  if (!socket) return;
+
+  socket.emit('start_game');
+
+}
+
+function showPartnerSelect() {
+
+  const grid = document.getElementById('partnerGrid');
+
+  grid.innerHTML = '';
+
+  const companions = [
+
+    { id: 'nightingale', name: '夜莺', desc: '诅咒反制/双杀' },
+
+    { id: 'pugelisi', name: '普格里斯', desc: '屏障/复活' },
+
+    { id: 'gouwen', name: '钩吻', desc: '双血/狂暴' },
+
+    { id: 'yuyu', name: '虞瑜', desc: '诅咒免疫/控制' },
+
+    { id: 'hewal', name: '赫瓦尔', desc: '死亡转移/隐身' },
+
+    { id: 'xiu', name: '修', desc: '根须/诅咒' },
+
+    { id: 'luolan', name: '洛兰', desc: '自动报告/管道感知' },
+
+    { id: 'yuansheng', name: '渊生', desc: '陷阱' },
+
+    { id: 'fengye', name: '风夜', desc: '复活/时停' },
+
+    { id: 'yezhu', name: '夜主', desc: '伪装/换票' }
+
+  ];
+
+  companions.forEach(c => {
+
+    const card = document.createElement('div');
+
+    card.className = 'partner-card';
+
+    card.innerHTML = '<div class="p-name">' + c.name + '</div><div class="p-desc">' + c.desc + '</div>';
+
+    card.onclick = () => selectPartner(c.id, card);
+
+    grid.appendChild(card);
+
+  });
+
+  document.getElementById('partnerSelect').style.display = 'flex';
+
+}
+
+function selectPartner(id, card) {
+
+  document.querySelectorAll('.partner-card').forEach(c => c.classList.remove('selected'));
+
+  card.classList.add('selected');
+
+  socket.emit('select_partner', { companionId: id });
+
+}
+
+// 自动显示伙伴选择（如果在大厅阶段）
+
+setInterval(() => {
+
+  if (document.getElementById('roomScreen').style.display === 'flex' && document.getElementById('partnerSelect').style.display !== 'flex') {
+
+    // 可以在这里自动弹出伙伴选择
+
+  }
+
+}, 1000);
+
+// 游戏循环
+
+function gameLoop(timestamp) {
+
+  animationFrame++;
+
+  const dt = timestamp - lastTime;
+
+  lastTime = timestamp;
+
+  if (!meetingActive && !isSpectating && gameState && gameState.alive && !gameState.ghost && !gameState.eliminated) {
+
+    updateMovement();
+
+  }
+
+  updateCamera();
+
+  render();
+
+  renderMinimap();
+
+  updateParticles();
+
+  requestAnimationFrame(gameLoop);
+
+}
+
+function updateMovement() {
+
+  const me = players[myId];
+
+  if (!me || !me.alive || me.ghost || me.eliminated || me.rooted) return;
+
+  if (timeStopActive && gameState.role !== 'impostor') return;
+
+  let dx = 0, dy = 0;
+
+  const speed = 3 * (me.speedMod || 1);
+
+  if (joystick.active) {
+
+    dx = joystick.dx * speed;
+
+    dy = joystick.dy * speed;
+
+  } else {
+
+    if (keys['w'] || keys['arrowup']) dy = -speed;
+
+    if (keys['s'] || keys['arrowdown']) dy = speed;
+
+    if (keys['a'] || keys['arrowleft']) dx = -speed;
+
+    if (keys['d'] || keys['arrowright']) dx = speed;
+
+  }
+
+  if (dx !== 0 || dy !== 0) {
+
+    const newX = me.x + dx;
+
+    const newY = me.y + dy;
+
+    if (!checkCollision(newX, newY)) {
+
+      me.x = newX;
+
+      me.y = newY;
+
+      socket.emit('player_move', { x: me.x, y: me.y });
+
+    }
+
+  }
+
+}
+
+function checkCollision(x, y) {
+
+  // 简化的边界检查
+
+  if (x < 20 || x > 980 || y < 20 || y > 680) return true;
+
+  return false;
+
+}
+
+function updateCamera() {
+
+  const me = players[myId];
+
+  if (!me) return;
+
+  if (isSpectating) {
+
+    // 观战模式：自由相机
+
+    if (keys['w'] || keys['arrowup']) camera.y -= 5;
+
+    if (keys['s'] || keys['arrowdown']) camera.y += 5;
+
+    if (keys['a'] || keys['arrowleft']) camera.x -= 5;
+
+    if (keys['d'] || keys['arrowright']) camera.x += 5;
+
+  } else {
+
+    camera.x = me.x - canvas.width / 2 / camera.zoom;
+
+    camera.y = me.y - canvas.height / 2 / camera.zoom;
+
+  }
+
+}
+
+function changeZoom(delta) {
+
+  camera.zoom = Math.max(0.5, Math.min(2, camera.zoom + delta));
+
+}
+
+// 渲染主地图
+
+function render() {
+
+  ctx.fillStyle = COLORS.dark;
+
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.save();
+
+  ctx.scale(camera.zoom, camera.zoom);
+
+  ctx.translate(-camera.x, -camera.y);
+
+  // 网格背景
+
+  drawGrid();
+
+  // 走廊
+
+  if (mapData && mapData.corridors) {
+
+    mapData.corridors.forEach(c => {
+
+      ctx.strokeStyle = 'rgba(0,240,255,0.15)';
+
+      ctx.lineWidth = 40;
+
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+
+      if (c.points && c.points.length > 0) {
+
+        ctx.moveTo(c.points[0][0], c.points[0][1]);
+
+        for (let i = 1; i < c.points.length; i++) {
+
+          ctx.lineTo(c.points[i][0], c.points[i][1]);
+
+        }
+
+      }
+
+      ctx.stroke();
+
+    });
+
+      }
+
+    // 房间
+
+  if (mapData && mapData.rooms) {
+
+    mapData.rooms.forEach(room => {
+
+      drawRoom(room);
+
+    });
+
+  }
+
+  // 管道
+
+  if (mapData && mapData.vents) {
+
+    mapData.vents.forEach(vent => {
+
+      drawVent(vent);
+
+    });
+
+  }
+
+  // 任务点
+
+  tasks.forEach(task => {
+
+    if (!task.completed) drawTask(task);
+
+  });
+
+  // 紧急按钮
+
+  if (mapData && mapData.rooms) {
+
+    const canteen = mapData.rooms[0];
+
+    drawEmergencyButton(canteen.x + canteen.w/2, canteen.y + canteen.h/2);
+
+  }
+
+  // 玩家
+
+  Object.values(players).forEach(p => {
+
+    if (p.id !== myId || !gameState.ghost) {
+
+      drawPlayer(p);
+
+    }
+
+  });
+
+  // 自己（幽灵模式半透明）
+
+  if (gameState && gameState.ghost) {
+
+    drawPlayer(players[myId], true);
+
+  }
+
+  // 特效
+
+  effects.forEach((e, i) => {
+
+    drawEffect(e);
+
+    e.life--;
+
+    if (e.life <= 0) effects.splice(i, 1);
+
+  });
+
+  // 粒子
+
+  particles.forEach((p, i) => {
+
+    ctx.fillStyle = p.color;
+
+    ctx.globalAlpha = p.alpha;
+
+    ctx.beginPath();
+
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+
+    p.x += p.vx;
+
+    p.y += p.vy;
+
+    p.alpha -= 0.02;
+
+    p.life--;
+
+    if (p.life <= 0 || p.alpha <= 0) particles.splice(i, 1);
+
+  });
+
+  ctx.restore();
+
+  // 扫描线覆盖
+
+  if (animationFrame % 4 === 0) {
+
+    ctx.fillStyle = 'rgba(0,240,255,0.02)';
+
+    ctx.fillRect(0, (animationFrame * 2) % canvas.height, canvas.width, 2);
+
+  }
+
+}
+
+function drawGrid() {
+
+  ctx.strokeStyle = COLORS.grid;
+
+  ctx.lineWidth = 1;
+
+  const gridSize = 50;
+
+  const startX = Math.floor(camera.x / gridSize) * gridSize;
+
+  const startY = Math.floor(camera.y / gridSize) * gridSize;
+
+  const endX = startX + canvas.width / camera.zoom + gridSize;
+
+  const endY = startY + canvas.height / camera.zoom + gridSize;
+
+  ctx.beginPath();
+
+  for (let x = startX; x < endX; x += gridSize) {
+
+    ctx.moveTo(x, startY);
+
+    ctx.lineTo(x, endY);
+
+  }
+
+  for (let y = startY; y < endY; y += gridSize) {
+
+    ctx.moveTo(startX, y);
+
+    ctx.lineTo(endX, y);
+
+  }
+
+  ctx.stroke();
+
+}
+
+function drawRoom(room) {
+
+  // 房间背景
+
+  ctx.fillStyle = 'rgba(10,10,20,0.6)';
+
+  ctx.fillRect(room.x - room.w/2, room.y - room.h/2, room.w, room.h);
+
+  // 发光边框
+
+  ctx.strokeStyle = room.color || COLORS.cyan;
+
+  ctx.lineWidth = 2;
+
+  ctx.shadowColor = room.color || COLORS.cyan;
+
+  ctx.shadowBlur = 10;
+
+  ctx.strokeRect(room.x - room.w/2, room.y - room.h/2, room.w, room.h);
+
+  ctx.shadowBlur = 0;
+
+  // 房间名称
+
+  ctx.fillStyle = room.color || COLORS.cyan;
+
+  ctx.font = 'bold 14px Orbitron';
+
+  ctx.textAlign = 'center';
+
+  ctx.shadowColor = room.color || COLORS.cyan;
+
+  ctx.shadowBlur = 8;
+
+  ctx.fillText(room.name, room.x, room.y - room.h/2 - 8);
+
+  ctx.shadowBlur = 0;
+
+  // 装饰物品
+
+  drawRoomItems(room);
+
+}
+
+function drawRoomItems(room) {
+
+  if (!room.items) return;
+
+  const cx = room.x, cy = room.y;
+
+  room.items.forEach((item, i) => {
+
+    const ix = cx - room.w/3 + (i % 2) * room.w/1.5;
+
+    const iy = cy - room.h/3 + Math.floor(i / 2) * room.h/3;
+
+    ctx.strokeStyle = 'rgba(0,240,255,0.3)';
+
+    ctx.lineWidth = 1;
+
+    switch(item) {
+
+      case 'table':
+
+        ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI*2); ctx.stroke();
+
+        break;
+
+      case 'screen':
+
+        ctx.fillStyle = 'rgba(0,240,255,0.1)';
+
+        ctx.fillRect(cx - 30, cy - 20, 60, 40);
+
+        if (Math.random() > 0.95) {
+
+          ctx.fillStyle = '#00f0ff';
+
+          ctx.fillRect(cx - 25, cy - 15, 50 * Math.random(), 30);
+
+        }
+
+        break;
+
+      case 'tank':
+
+        ctx.beginPath(); ctx.ellipse(cx, cy, 15, 25, 0, 0, Math.PI*2); ctx.stroke();
+
+        break;
+
+      case 'bed':
+
+        ctx.strokeRect(cx - 20, cy - 30, 40, 60);
+
+        break;
+
+      case 'rack':
+
+        ctx.beginPath(); ctx.moveTo(cx - 20, cy - 20); ctx.lineTo(cx + 20, cy - 20);
+
+        ctx.moveTo(cx - 20, cy); ctx.lineTo(cx + 20, cy);
+
+        ctx.moveTo(cx - 20, cy + 20); ctx.lineTo(cx + 20, cy + 20); ctx.stroke();
+
+        break;
+
+      case 'panel':
+
+        ctx.fillStyle = 'rgba(255,49,49,0.2)';
+
+        ctx.fillRect(cx - 25, cy - 20, 50, 40);
+
+        if (Math.random() > 0.9) {
+
+          ctx.strokeStyle = '#ff3131';
+
+          ctx.beginPath(); ctx.moveTo(cx - 20, cy - 10); ctx.lineTo(cx + 20, cy + 10); ctx.stroke();
+
+        }
+
+        break;
+
+    }
+
+  });
+
+}
+
+function drawVent(vent) {
+
+  const pulse = Math.sin(animationFrame * 0.05) * 0.3 + 0.7;
+
+  ctx.strokeStyle = `rgba(0,240,255,${pulse})`;
+
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+
+  ctx.arc(vent.x, vent.y, 18, 0, Math.PI * 2);
+
+  ctx.stroke();
+
+  // 格栅
+
+  for (let i = 0; i < 3; i++) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(vent.x - 15, vent.y - 10 + i * 10);
+
+    ctx.lineTo(vent.x + 15, vent.y - 10 + i * 10);
+
+    ctx.stroke();
+
+  }
+
+  // 数据流
+
+  ctx.strokeStyle = `rgba(0,240,255,${pulse * 0.5})`;
+
+  ctx.beginPath();
+
+  ctx.arc(vent.x, vent.y, 12, animationFrame * 0.02, animationFrame * 0.02 + 1);
+
+  ctx.stroke();
+
+}
+
+function drawTask(task) {
+
+  const pulse = Math.sin(animationFrame * 0.08) * 0.4 + 0.6;
+
+  // 发光菱形
+
+  ctx.save();
+
+  ctx.translate(task.x, task.y);
+
+  ctx.rotate(animationFrame * 0.02);
+
+  ctx.strokeStyle = `rgba(0,240,255,${pulse})`;
+
+  ctx.lineWidth = 2;
+
+  ctx.shadowColor = '#00f0ff';
+
+  ctx.shadowBlur = 10;
+
+  ctx.beginPath();
+
+  ctx.moveTo(0, -15);
+
+  ctx.lineTo(12, 0);
+
+  ctx.lineTo(0, 15);
+
+  ctx.lineTo(-12, 0);
+
+  ctx.closePath();
+
+  ctx.stroke();
+
+  ctx.fillStyle = `rgba(0,240,255,${pulse * 0.3})`;
+
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  ctx.restore();
+
+  // 名称
+
+  ctx.fillStyle = 'rgba(0,240,255,0.7)';
+
+  ctx.font = '10px Orbitron';
+
+  ctx.textAlign = 'center';
+
+  ctx.fillText(task.name, task.x, task.y - 22);
+
+}
+
+function drawEmergencyButton(x, y) {
+
+  const pulse = Math.sin(animationFrame * 0.1) * 0.3 + 0.7;
+
+  ctx.fillStyle = `rgba(255,49,49,${pulse})`;
+
+  ctx.shadowColor = '#ff3131';
+
+  ctx.shadowBlur = 15;
+
+  ctx.beginPath();
+
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
+
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = '#fff';
+
+  ctx.font = '16px Arial';
+
+  ctx.textAlign = 'center';
+
+  ctx.textBaseline = 'middle';
+
+  ctx.fillText('⚡', x, y);
+
+}
+
+function drawPlayer(p, isSelfGhost = false) {
+
+  if (!p) return;
+
+  // 幽灵对活人不可见
+
+  if (p.ghost && p.id !== myId) return;
+
+  // 隐身
+  if (p.invisible && p.id !== myId) {
+
+    ctx.globalAlpha = 0.1;
+
+  }
+
+  // 伪装
+
+  let displayName = p.name;
+
+  let displayEmoji = p.emoji || '👤';
+
+  if (p.disguised && p.id !== myId) {
+
+    displayName = p.disguised.name;
+
+    displayEmoji = p.disguised.emoji || '👤';
+
+  }
+
+  // 六边形颜色
+
+  let hexColor = COLORS.cyan;
+
+  if (p.id === myId && gameState && gameState.role === 'impostor') hexColor = COLORS.red;
+
+  if (p.ghost) hexColor = '#666';
+
+  if (p.eliminated) hexColor = '#333';
+
+  ctx.strokeStyle = hexColor;
+
+  ctx.lineWidth = 3;
+
+  ctx.shadowColor = hexColor;
+
+  ctx.shadowBlur = p.id === myId ? 15 : 8;
+
+  // 六边形
+
+  const size = 22;
+
+  ctx.beginPath();
+
+  for (let i = 0; i < 6; i++) {
+
+    const angle = (Math.PI / 3) * i - Math.PI / 6;
+
+    const px = p.x + size * Math.cos(angle);
+
+    const py = p.y + size * Math.sin(angle);
+
+    if (i === 0) ctx.moveTo(px, py);
+
+    else ctx.lineTo(px, py);
+
+  }
+
+  ctx.closePath();
+
+  ctx.stroke();
+
+  ctx.shadowBlur = 0;
+
+  
+  // 表情
+
+  ctx.fillStyle = '#fff';
+
+  ctx.font = '20px Arial';
+
+  ctx.textAlign = 'center';
+
+  ctx.textBaseline = 'middle';
+
+  ctx.fillText(displayEmoji, p.x, p.y);
+
+  // 名字
+
+  ctx.fillStyle = p.ghost ? 'rgba(255,255,255,0.4)' : '#fff';
+
+  ctx.font = '12px Orbitron';
+
+  ctx.fillText(displayName, p.x, p.y + 38);
+
+  // 状态图标
+
+  let statusIcon = '🔋';
+
+  if (p.ghost) statusIcon = '💀';
+
+  else if (p.barrier) statusIcon = '🛡️';
+
+  ctx.font = '10px Arial';
+
+  ctx.fillText(statusIcon, p.x + 28, p.y - 18);
+
+  // 自己的伙伴名称
+
+  if (p.id === myId && gameState && gameState.companion) {
+
+    ctx.fillStyle = 'rgba(179,0,255,0.7)';
+
+    ctx.font = '10px Orbitron';
+
+    ctx.fillText(getCompanionName(gameState.companion), p.x, p.y + 52);
+
+  }
+
+  // 血量条
+
+  if (!p.ghost && !p.eliminated) {
+
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+
+    ctx.fillRect(p.x - 20, p.y - 32, 40, 4);
+
+    ctx.fillStyle = p.injured ? '#ff3131' : '#00f0ff';
+
+    ctx.fillRect(p.x - 20, p.y - 32, 40 * (p.injured ? 0.5 : 1), 4);
+
+  }
+
+  ctx.globalAlpha = 1;
+
+}
+
+function drawEffect(e) {
+
+  switch(e.type) {
+
+    case 'barrier':
+
+      ctx.strokeStyle = 'rgba(0,150,255,0.6)';
+
+      ctx.lineWidth = 2;
+
+      for (let i = 0; i < 6; i++) {
+
+        const angle = (Math.PI / 3) * i;
+
+        const r = 35 + Math.sin(animationFrame * 0.1) * 5;
+
+        ctx.beginPath();
+
+        ctx.moveTo(e.x + r * Math.cos(angle), e.y + r * Math.sin(angle));
+
+        ctx.lineTo(e.x + r * Math.cos(angle + Math.PI/3), e.y + r * Math.sin(angle + Math.PI/3));
+
+        ctx.stroke();
+
+      }
+
+      break;
+
+    case 'curse':
+
+      ctx.fillStyle = `rgba(255,0,0,${Math.random() * 0.3})`;
+
+      for (let i = 0; i < 5; i++) {
+
+        const rx = e.x + (Math.random() - 0.5) * 50;
+
+        const ry = e.y + (Math.random() - 0.5) * 50;
+
+        ctx.fillRect(rx, ry, Math.random() * 20 + 5, 3);
+
+      }
+
+      break;
+
+    case 'trap_trigger':
+
+      const trapPulse = Math.sin(animationFrame * 0.2) * 0.5 + 0.5;
+
+      ctx.fillStyle = `rgba(179,0,255,${trapPulse * 0.4})`;
+
+      ctx.beginPath();
+
+      ctx.arc(e.x, e.y, 40, 0, Math.PI * 2);
+
+      ctx.fill();
+
+      ctx.strokeStyle = `rgba(179,0,255,${trapPulse})`;
+
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+
+      ctx.arc(e.x, e.y, 30 + Math.sin(animationFrame * 0.3) * 10, 0, Math.PI * 2);
+
+      ctx.stroke();
+
+      break;
+
+    case 'resurrect':
+
+      for (let i = 0; i < 10; i++) {
+
+        ctx.fillStyle = 'rgba(0,240,255,0.6)';
+
+        ctx.beginPath();
+
+        ctx.arc(e.x + (Math.random() - 0.5) * 30, e.y - Math.random() * 50, 2, 0, Math.PI * 2);
+
+        ctx.fill();
+
+      }
+
+      break;
+
+    case 'time_stop':
+
+      ctx.strokeStyle = 'rgba(0,240,255,0.2)';
+
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < 1000; x += 40) {
+
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 700); ctx.stroke();
+
+      }
+
+      for (let y = 0; y < 700; y += 40) {
+
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1000, y); ctx.stroke();
+
+      }
+
+      break;
+
+    case 'execution':
+
+      ctx.strokeStyle = '#00f0ff';
+
+      ctx.lineWidth = 3;
+
+      for (let i = 0; i < 4; i++) {
+
+        const angle = (Math.PI / 2) * i + animationFrame * 0.05;
+
+        ctx.beginPath();
+
+        ctx.arc(e.x, e.y, 30, angle, angle + 0.5);
+
+        ctx.stroke();
+
+      }
+
+      break;
+
+    case 'death':
+
+      ctx.fillStyle = `rgba(255,0,0,${e.life / 60})`;
+
+      ctx.beginPath();
+
+      ctx.arc(e.x, e.y, 30 * (1 - e.life / 60), 0, Math.PI * 2);
+
+      ctx.fill();
+
+      break;
+
+  }
+
+}
+
+function addEffect(type, x, y) {
+
+  effects.push({ type, x, y, life: 60 });
+
+  if (type === 'resurrect') {
+
+    for (let i = 0; i < 20; i++) {
+
+      particles.push({
+
+        x, y, vx: (Math.random() - 0.5) * 3, vy: -Math.random() * 3 - 1,
+
+        color: '#00f0ff', size: Math.random() * 3 + 1, alpha: 1, life: 40
+
+      });
+
+    }
+
+  }
+
+}
+
+function updateParticles() {
+
+  // 在draw中处理
+
+}
+
+// 小地图
+
+function renderMinimap() {
+
+  const mctx = minimapCtx;
+
+  const mw = 120, mh = 120;
+
+  mctx.fillStyle = 'rgba(10,10,10,0.9)';
+
+  mctx.fillRect(0, 0, mw, mh);
+
+  const scaleX = mw / 1000;
+
+  const scaleY = mh / 700;
+
+  // 扫描线
+
+  mctx.fillStyle = 'rgba(0,240,255,0.1)';
+
+  mctx.fillRect(0, (animationFrame * 2) % mh, mw, 1);
+
+  // 房间轮廓
+
+  if (mapData && mapData.rooms) {
+
+    mapData.rooms.forEach(room => {
+
+      mctx.strokeStyle = 'rgba(0,240,255,0.4)';
+
+      mctx.lineWidth = 1;
+
+      mctx.strokeRect(
+
+        (room.x - room.w/2) * scaleX, (room.y - room.h/2) * scaleY,
+
+        room.w * scaleX, room.h * scaleY
+
+      );
+
+    });
+
+  }
+
+  // 任务点（仅自己的）
+
+  if (gameState && gameState.role === 'crew' && !gameState.ghost) {
+
+    tasks.forEach(task => {
+
+      if (!task.completed && myTasks.includes(task.id)) {
+
+        const pulse = Math.sin(animationFrame * 0.1) * 0.5 + 0.5;
+
+        mctx.fillStyle = `rgba(0,240,255,${pulse})`;
+
+        mctx.beginPath();
+
+        mctx.arc(task.x * scaleX, task.y * scaleY, 3, 0, Math.PI * 2);
+
+        mctx.fill();
+
+      }
+
+    });
+
+  }
+
+  // 紧急按钮
+
+  if (mapData && mapData.rooms) {
+
+    const canteen = mapData.rooms[0];
+
+    mctx.fillStyle = '#ff3131';
+
+    mctx.font = '10px Arial';
+
+    mctx.fillText('⚡', (canteen.x) * scaleX - 4, (canteen.y) * scaleY + 4);
+
+  }
+
+  // 自己
+
+  const me = players[myId];
+
+  if (me) {
+
+    mctx.fillStyle = '#00f0ff';
+
+    mctx.beginPath();
+
+    mctx.moveTo(me.x * scaleX, (me.y - 6) * scaleY);
+
+    mctx.lineTo((me.x - 4) * scaleX, (me.y + 4) * scaleY);
+
+    mctx.lineTo((me.x + 4) * scaleX, (me.y + 4) * scaleY);
+
+    mctx.closePath();
+
+    mctx.fill();
+
+  }
+
+}
+
+// 输入处理
+
+const joystickEl = document.getElementById('joystick');
+
+const knobEl = document.getElementById('joystickKnob');
+
+joystickEl.addEventListener('touchstart', e => {
+
+  e.preventDefault();
+
+  const touch = e.touches[0];
+
+  const rect = joystickEl.getBoundingClientRect();
+
+  joystick.active = true;
+
+  joystick.originX = rect.left + rect.width / 2;
+
+  joystick.originY = rect.top + rect.height / 2;
+
+  updateJoystick(touch.clientX, touch.clientY);
+
+}, { passive: false });
+
+joystickEl.addEventListener('touchmove', e => {
+
+  e.preventDefault();
+
+  if (!joystick.active) return;
+
+  const touch = e.touches[0];
+
+  updateJoystick(touch.clientX, touch.clientY);
+
+}, { passive: false });
+
+joystickEl.addEventListener('touchend', e => {
+
+  e.preventDefault();
+
+  joystick.active = false;
+
+  joystick.dx = 0;
+
+  joystick.dy = 0;
+
+  knobEl.style.transform = 'translate(-50%, -50%)';
+
+}, { passive: false });
+
+function updateJoystick(clientX, clientY) {
+
+  const maxDist = 35;
+
+  let dx = clientX - joystick.originX;
+
+  let dy = clientY - joystick.originY;
+
+  const distance = Math.hypot(dx, dy);
+
+  if (distance > maxDist) {
+
+    dx = (dx / distance) * maxDist;
+
+    dy = (dy / distance) * maxDist;
+
+  }
+
+  knobEl.style.transform = 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px))';
+
+  joystick.dx = dx / maxDist;
+
+  joystick.dy = dy / maxDist;
+
+}
+
+// 鼠标/键盘支持
+
+window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+// 双指缩放
+
+canvas.addEventListener('touchmove', e => {
+
+  if (e.touches.length === 2) {
+
+    const dist = Math.hypot(
+
+      e.touches[0].clientX - e.touches[1].clientX,
+
+      e.touches[0].clientY - e.touches[1].clientY
+
+    );
+
+    if (canvas.lastPinchDist) {
+
+      const delta = dist - canvas.lastPinchDist;
+
+      camera.zoom = Math.max(0.5, Math.min(2, camera.zoom + delta * 0.005));
+
+    }
+
+    canvas.lastPinchDist = dist;
+
+  }
+
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => { canvas.lastPinchDist = null; });
+
+// 滚轮缩放
+
+canvas.addEventListener('wheel', e => {
+
+  e.preventDefault();
+
+  camera.zoom = Math.max(0.5, Math.min(2, camera.zoom - e.deltaY * 0.001));
+
+}, { passive: false });
+
+// 交互功能
+
+function interactTask() {
+
+  if (!gameState || !gameState.alive || gameState.ghost || gameState.eliminated) return;
+
+  if (gameState.role !== 'crew') return;
+
+  const me = players[myId];
+
+  const nearby = tasks.find(t => !t.completed && myTasks.includes(t.id) && dist(me, t) < 50);
+
+  if (nearby) {
+
+    socket.emit('task_interact', { taskId: nearby.id });
+
+  }
+
+}
+
+function reportBody() {
+
+  if (!gameState || !gameState.alive || gameState.ghost || gameState.eliminated) return;
+
+  const me = players[myId];
+
+  const deadBody = Object.values(players).find(p => !p.alive && p.ghost && dist(me, p) < 60);
+
+  if (deadBody) {
+
+    socket.emit('report_body', { targetId: deadBody.id });
+
+  } else {
+
+    // 紧急会议
+
+    socket.emit('emergency_meeting');
+
+  }
+
+}
+
+function attemptKill() {
+
+  if (!gameState || gameState.role !== 'impostor' || !gameState.alive || gameState.ghost) return;
+
+  const me = players[myId];
+
+  const target = Object.values(players).find(p => 
+
+    p.id !== myId && p.alive && !p.ghost && !p.eliminated && dist(me, p) < 50
+
+  );
+
+  if (target) {
+
+    socket.emit('kill_attempt', { targetId: target.id });
+
+  }
+
+}
+
+function useAbility() {
+
+  if (!gameState || !gameState.alive || gameState.ghost || gameState.eliminated) return;
+
+  const companion = gameState.companion;
+
+  const phase = 'free'; // 简化处理
+
+  // 根据伙伴显示不同的能力界面
+
+  switch(companion) {
+
+    case 'fengye':
+
+      if (gameState.role === 'impostor') {
+
+        socket.emit('ability_use', { ability: 'time_stop' });
+
+      } else {
+
+        // 正义击杀 - 需要选择目标
+
+        const target = selectNearestPlayer();
+
+        if (target) socket.emit('ability_use', { ability: 'righteous_kill', targetId: target.id });
+
+      }
+
+      break;
+
+    case 'hewal':
+
+      if (gameState.role === 'impostor') {
+
+        socket.emit('ability_use', { ability: 'invis' });
+
+      } else if (gameState.charge >= 3) {
+
+        const target = selectNearestPlayer();
+
+        if (target) socket.emit('ability_use', { ability: 'charge_skill', targetId: target.id, data: { skill: 'check' } });
+
+      }
+
+      break;
+
+    case 'yezhu':
+
+      if (gameState.role === 'impostor') {
+
+        const target = selectNearestPlayer();
+
+        if (target) socket.emit('ability_use', { ability: 'disguise', targetId: target.id });
+
+      } else {
+
+        // 投票交换
+
+        alert('在会议中使用投票交换');
+
+      }
+
+      break;
+
+    case 'yuansheng':
+
+      if (gameState.role === 'impostor') {
+
+        socket.emit('ability_use', { ability: 'trap' });
+
+      }
+
+      break;
+
+    case 'xiu':
+
+      if (gameState.role === 'impostor') {
+
+        const target = selectNearestPlayer();
+
+        if (target) socket.emit('ability_use', { ability: 'curse', targetId: target.id });
+
+      }
+
+      break;
+
+    case 'yuyu':
+
+      if (gameState.role === 'impostor') {
+
+        const target = selectNearestPlayer();
+
+        if (target) {
+
+          const victim = selectNearestPlayer(target.id);
+
+          if (victim) socket.emit('ability_use', { ability: 'control_attack', targetId: target.id, data: { targetId: victim.id } });
+
+        }
+
+      }
+
+      break;
+
+    case 'pugelisi':
+
+      const dead = Object.values(players).find(p => p.ghost && !p.eliminated);
+
+      if (dead) socket.emit('ability_use', { ability: 'resurrect', targetId: dead.id });
+
+      break;
+
+    case 'luolan':
+
+      socket.emit('ability_use', { ability: 'vent_sense' });
+
+      break;
+
+    case 'gouwen':
+
+      if (gameState.charge >= 1) {
+
+        socket.emit('ability_use', { ability: 'charge_skill', data: { skill: 'speed' } });
+
+      }
+
+      break;
+
+    case 'nightingale':
+
+      if (gameState.charge >= 2) {
+
+        socket.emit('ability_use', { ability: 'charge_skill', data: { skill: 'barrier' } });
+
+      }
+
+      break;
+
+  }
+
+}
+
+function selectNearestPlayer(excludeId) {
+
+  const me = players[myId];
+
+  let nearest = null;
+
+  let minDist = Infinity;
+
+  Object.values(players).forEach(p => {
+
+    if (p.id === myId || p.id === excludeId) return;
+
+    if (!p.alive || p.ghost || p.eliminated) return;
+
+    const d = dist(me, p);
+
+    if (d < minDist) { minDist = d; nearest = p; }
+
+  });
+
+  return nearest;
+
+}
+
+function useVent() {
+
+  if (!gameState || gameState.role !== 'impostor' || !gameState.alive || gameState.ghost) return;
+
+  const me = players[myId];
+
+  const nearVent = mapData.vents.find(v => dist(me, v) < 40);
+
+  if (!nearVent) return;
+
+  // 显示管道选择
+  const targets = mapData.vents.filter(v => v.id !== nearVent.id);
+
+  const target = targets[Math.floor(Math.random() * targets.length)];
+
+  socket.emit('vent_use', { ventId: nearVent.id, targetVentId: target.id });
+
+}
+
+function sabotage() {
+
+  if (!gameState || gameState.role !== 'impostor' || !gameState.alive || gameState.ghost) return;
+
+  const me = players[myId];
+
+  const powerRoom = mapData.rooms.find(r => r.name === '电力间');
+
+  const oxyRoom = mapData.rooms.find(r => r.name === '氧气舱');
+
+  const nearPower = powerRoom && Math.abs(me.x - powerRoom.x) < 100 && Math.abs(me.y - powerRoom.y) < 80;
+
+  const nearOxy = oxyRoom && Math.abs(me.x - oxyRoom.x) < 100 && Math.abs(me.y - oxyRoom.y) < 80;
+
+  if (nearPower) socket.emit('sabotage', { type: 'power' });
+
+  else if (nearOxy) socket.emit('sabotage', { type: 'oxygen' });
+
+  else alert('请前往电力间或氧气舱进行破坏');
+
+}
+
+  // 任务QTE
+
+socket.on('task_start', ({ task }) => {
+
+  currentTask = task;
+
+  showTaskUI(task);
+
+});
+
+function showTaskUI(task) {
+
+  const overlay = document.getElementById('taskOverlay');
+
+  const title = document.getElementById('taskTitle');
+
+  const content = document.getElementById('taskContent');
+
+  const timer = document.getElementById('taskTimer');
+
+  overlay.style.display = 'flex';
+
+  title.textContent = task.data.name;
+
+  content.innerHTML = '';
+
+  timer.textContent = '';
+
+  switch(task.type) {
+
+    case 'clean_fan':
+
+      showCleanFan(task, content, timer);
+
+      break;
+
+    case 'swipe_card':
+
+      showSwipeCard(task, content, timer);
+
+      break;
+
+    case 'wiring':
+
+      showWiring(task, content);
+
+      break;
+
+    case 'password':
+
+      showPassword(task, content);
+
+      break;
+
+    case 'antenna':
+
+      showAntenna(task, content, timer);
+
+      break;
+
+    case 'upload':
+
+      showUpload(task, content, timer);
+
+      break;
+
+  }
+
+}
+
+function showCleanFan(task, container, timerEl) {
+
+  let cleaned = 0;
+
+  const total = task.data.clicks || 5;
+
+  const timeLimit = task.data.time || 8;
+
+  const div = document.createElement('div');
+
+  div.className = 'fan-stains';
+
+  for (let i = 0; i < total; i++) {
+
+    const stain = document.createElement('div');
+
+    stain.className = 'stain';
+
+    stain.onclick = () => {
+
+      if (stain.classList.contains('cleaned')) return;
+
+      stain.classList.add('cleaned');
+
+      cleaned++;
+
+      if (cleaned >= total) completeTask(task.id);
+
+    };
+
+    div.appendChild(stain);
+
+  }
+
+  container.appendChild(div);
+
+  let timeLeft = timeLimit;
+
+  timerEl.textContent = timeLeft + 's';
+
+  taskTimer = setInterval(() => {
+
+    timeLeft--;
+
+    timerEl.textContent = timeLeft + 's';
+
+    if (timeLeft <= 0) { clearInterval(taskTimer); closeTask(); }
+
+  }, 1000);
+
+}
+
+function showSwipeCard(task, container, timerEl) {
+
+  let progress = 0;
+
+  let isDragging = false;
+
+  const div = document.createElement('div');
+
+  div.className = 'swipe-container';
+
+  div.innerHTML = '<div class="swipe-green"></div><div class="swipe-track"></div><div class="swipe-card"></div>';
+
+  container.appendChild(div);
+
+  const card = div.querySelector('.swipe-card');
+
+  const green = div.querySelector('.swipe-green');
+
+  const greenRect = () => green.getBoundingClientRect();
+
+  const startDrag = e => {
+
+    isDragging = true;
+
+    card.style.cursor = 'grabbing';
+
+  };
+
+  const moveDrag = e => {
+
+    if (!isDragging) return;
+
+    const rect = div.getBoundingClientRect();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+
+    let x = clientX - rect.left - 25;
+
+    x = Math.max(0, Math.min(rect.width - 50, x));
+
+    card.style.left = x + 'px';
+
+    const gr = greenRect();
+
+    const cr = card.getBoundingClientRect();
+
+    const inZone = cr.left > gr.left && cr.right < gr.right;
+
+    if (inZone) {
+
+      progress += 0.02;
+
+      if (progress >= 3) { completeTask(task.id); isDragging = false; }
+
+    } else {
+
+      progress = Math.max(0, progress - 0.05);
+
+    }
+
+  };
+
+  const endDrag = () => { isDragging = false; card.style.cursor = 'grab'; };
+
+  card.addEventListener('mousedown', startDrag);
+
+  card.addEventListener('touchstart', startDrag, { passive: false });
+
+  window.addEventListener('mousemove', moveDrag);
+
+  window.addEventListener('touchmove', moveDrag, { passive: false });
+
+  window.addEventListener('mouseup', endDrag);
+
+  window.addEventListener('touchend', endDrag);
+
+}
+
+function showWiring(task, container) {
+
+  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+
+  const shuffled = [...colors].sort(() => Math.random() - 0.5);
+
+  let connected = 0;
+
+  let selected = null;
+
+  const div = document.createElement('div');
+
+  div.className = 'wiring-container';
+
+  div.style.position = 'relative';
+
+  div.style.height = '250px';
+
+  const leftPorts = document.createElement('div');
+
+  leftPorts.className = 'wiring-ports';
+
+  leftPorts.style.position = 'absolute'; leftPorts.style.left = '20px'; leftPorts.style.top = '20px';
+
+  const rightPorts = document.createElement('div');
+
+  rightPorts.className = 'wiring-ports';
+
+  rightPorts.style.position = 'absolute'; rightPorts.style.right = '20px'; rightPorts.style.top = '20px';
+
+  colors.forEach((color, i) => {
+
+    const lp = document.createElement('div');
+
+    lp.className = 'wiring-port';
+
+    lp.style.borderColor = color; lp.style.color = color;
+
+    lp.textContent = i + 1;
+
+    lp.dataset.color = color;
+
+    lp.onclick = () => { selected = { el: lp, color, side: 'left', y: lp.offsetTop + 20 }; };
+
+    leftPorts.appendChild(lp);
+
+    const rp = document.createElement('div');
+
+    rp.className = 'wiring-port';
+
+    rp.style.borderColor = shuffled[i]; rp.style.color = shuffled[i];
+
+    rp.textContent = String.fromCharCode(65 + i);
+
+    rp.dataset.color = shuffled[i];
+
+    rp.onclick = () => {
+
+      if (selected && selected.side === 'left' && selected.color === shuffled[i]) {
+
+        const line = document.createElement('div');
+
+        line.className = 'wiring-line';
+
+        line.style.left = '60px';
+
+        line.style.top = (selected.y + 40 * i) + 'px';
+
+        line.style.width = (div.offsetWidth - 120) + 'px';
+
+        line.style.color = selected.color;
+
+        div.appendChild(line);
+
+        connected++;
+
+        selected.el.style.opacity = '0.3';
+
+        rp.style.opacity = '0.3';
+
+        selected = null;
+
+        if (connected >= colors.length) completeTask(task.id);
+
+      }
+
+    };
+
+    rightPorts.appendChild(rp);
+
+  });
+
+  div.appendChild(leftPorts);
+
+  div.appendChild(rightPorts);
+
+  container.appendChild(div);
+
+}
+
+function showPassword(task, container) {
+
+  const code = task.data.code || '2049';
+
+  const digits = [];
+
+  const div = document.createElement('div');
+
+  div.className = 'password-container';
+
+  for (let i = 0; i < 4; i++) {
+
+    const d = document.createElement('div');
+
+    d.className = 'password-digit';
+
+    d.textContent = '0';
+
+    d.dataset.value = 0;
+
+    d.dataset.index = i;
+
+    d.onclick = () => {
+
+      let v = parseInt(d.dataset.value);
+
+      v = (v + 1) % 10;
+
+      d.dataset.value = v;
+
+      d.textContent = v;
+
+      checkPassword();
+
+    };
+
+    digits.push(d);
+
+    div.appendChild(d);
+
+  }
+
+  container.appendChild(div);
+
+  const hint = document.createElement('div');
+
+  hint.style.textAlign = 'center'; hint.style.marginTop = '10px'; hint.style.color = 'rgba(0,240,255,0.6)';
+
+  hint.textContent = '提示: 2-0-4-9';
+
+  container.appendChild(hint);
+
+  function checkPassword() {
+
+    const entered = digits.map(d => d.dataset.value).join('');
+
+    if (entered === code) completeTask(task.id);
+
+  }
+
+}
+
+function showAntenna(task, container, timerEl) {
+
+  const div = document.createElement('div');
+
+  div.className = 'antenna-container';
+
+  for (let i = 1; i <= 4; i++) {
+
+    const ring = document.createElement('div');
+
+    ring.className = 'antenna-ring';
+
+    ring.style.width = (i * 60) + 'px';
+
+    ring.style.height = (i * 60) + 'px';
+
+    ring.style.left = (140 - i * 30) + 'px';
+
+    ring.style.top = (140 - i * 30) + 'px';
+
+    div.appendChild(ring);
+
+  }
+
+  const target = document.createElement('div');
+
+  target.className = 'antenna-target';
+
+  let tx = 140, ty = 140;
+
+  target.style.left = tx + 'px'; target.style.top = ty + 'px';
+
+  div.appendChild(target);
+
+  const cursor = document.createElement('div');
+
+  cursor.className = 'antenna-cursor';
+
+  cursor.style.left = '140px'; cursor.style.top = '140px';
+
+  div.appendChild(cursor);
+
+  container.appendChild(div);
+
+  let targetTime = 0;
+
+  const moveTarget = () => {
+
+    tx = 60 + Math.random() * 160;
+
+    ty = 60 + Math.random() * 160;
+
+    target.style.left = tx + 'px';
+
+    target.style.top = ty + 'px';
+
+  };
+
+  setInterval(moveTarget, 2000);
+
+  const trackMouse = e => {
+
+    const rect = div.getBoundingClientRect();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const cx = clientX - rect.left;
+
+    const cy = clientY - rect.top;
+
+    cursor.style.left = cx + 'px';
+
+    cursor.style.top = cy + 'px';
+
+    const d = Math.hypot(cx - tx - 10, cy - ty - 10);
+
+    if (d < 20) {
+
+      targetTime += 0.05;
+
+      if (targetTime >= 2) completeTask(task.id);
+
+    } else {
+
+      targetTime = Math.max(0, targetTime - 0.1);
+
+    }
+
+  };
+
+  div.addEventListener('mousemove', trackMouse);
+
+  div.addEventListener('touchmove', trackMouse, { passive: false });
+
+}
+
+function showUpload(task, container, timerEl) {
+
+  const div = document.createElement('div');
+
+  div.className = 'upload-container';
+
+  const bar = document.createElement('div');
+
+  bar.className = 'upload-bar';
+
+  const fill = document.createElement('div');
+
+  fill.className = 'upload-fill';
+
+  bar.appendChild(fill);
+
+  div.appendChild(bar);
+
+  container.appendChild(div);
+
+  let progress = 0;
+
+  let interferences = [];
+
+  const spawnInterference = () => {
+
+    const intf = document.createElement('div');
+
+    intf.className = 'upload-interference';
+
+    intf.style.top = '0px';
+
+    intf.onclick = () => { intf.remove(); progress = Math.max(0, progress - 5); };
+
+    bar.appendChild(intf);
+
+    interferences.push(intf);
+
+    setTimeout(() => { if (intf.parentNode) intf.remove(); }, 3000);
+
+  };
+
+  const uploadTimer = setInterval(() => {
+
+    progress += 0.5;
+
+    fill.style.width = progress + '%';
+
+    if (Math.random() < 0.3) spawnInterference();
+
+    if (progress >= 100) { clearInterval(uploadTimer); completeTask(task.id); }
+
+  }, 100);
+
+  taskTimer = uploadTimer;
+
+}
+
+function completeTask(taskId) {
+
+  socket.emit('task_complete', { taskId });
+
+  closeTask();
+
+}
+
+function closeTask() {
+
+  if (taskTimer) { clearInterval(taskTimer); taskTimer = null; }
+
+  document.getElementById('taskOverlay').style.display = 'none';
+
+  currentTask = null;
+
+}
+
+  // 游戏结束
+
+function showGameOver(winner, stats) {
+
+  document.getElementById('gameOverOverlay').style.display = 'flex';
+
+  const title = document.getElementById('winnerText');
+
+  if (winner === 'impostor') {
+
+    title.textContent = '内鬼胜利';
+
+    title.className = 'neon-red';
+
+  } else {
+
+    title.textContent = '船员胜利';
+
+    title.className = 'neon-text';
+
+  }
+
+  const statsDiv = document.getElementById('gameOverStats');
+
+  statsDiv.innerHTML = '';
+
+  Object.values(stats).forEach(p => {
+
+    const div = document.createElement('div');
+
+    div.style.cssText = 'margin:8px 0;font-size:14px;';
+
+    const roleText = p.role === 'impostor' ? '<span style="color:#ff3131;">[内鬼]</span>' : '<span style="color:#00f0ff;">[船员]</span>';
+
+    const statusText = p.eliminated ? '<span style="color:#666;">(淘汰)</span>' : p.ghost ? '<span style="color:#b300ff;">(幽灵)</span>' : '<span style="color:#0f0;">(存活)</span>';
+
+    div.innerHTML = p.emoji + ' ' + p.name + ' ' + roleText + ' ' + statusText + ' - 伙伴: ' + getCompanionName(p.companion);
+
+    statsDiv.appendChild(div);
+
+  });
+
+}
+
+function returnToLobby() {
+
+  document.getElementById('gameOverOverlay').style.display = 'none';
+
+  document.getElementById('hud').style.display = 'none';
+
+  document.getElementById('lobbyScreen').style.display = 'flex';
+
+  resetClient();
+
+}
+
+function resetClient() {
+
+  gameState = null;
+
+  players = {};
+
+  mapData = null;
+
+  tasks = [];
+
+  myTasks = [];
+
+  currentTask = null;
+
+  meetingActive = false;
+
+  isSpectating = false;
+
+  timeStopActive = false;
+
+  sabotageActive = false;
+
+  oxygenActive = false;
+
+  effects = [];
+
+  particles = [];
+
+  camera = { x: 0, y: 0, zoom: 1 };
+
+  document.getElementById('hud').style.display = 'none';
+
+  document.getElementById('joystick').style.display = 'none';
+
+  document.getElementById('actionButtons').style.display = 'none';
+
+  document.getElementById('taskPanel').style.display = 'block';
+
+  document.getElementById('impostorChat').style.display = 'none';
+
+  document.getElementById('spectateHint').style.display = 'none';
+
+  document.getElementById('exitSpectateBtn').style.display = 'none';
+
+  document.getElementById('eliminationOverlay').style.display = 'none';
+
+  document.getElementById('warningOverlay').style.display = 'none';
+
+  document.getElementById('oxygenBar').style.display = 'none';
+
+  document.querySelector('.action-btn.kill').style.display = 'none';
+
+  document.querySelector('.action-btn.vent').style.display = 'none';
+
+  document.querySelector('.action-btn.sabotage').style.display = 'none';
+
+}
+
+// 特效处理
+function handleEffect(data) {
+
+  switch(data.type) {
+
+    case 'barrier':
+
+      if (players[data.playerId]) {
+
+        addEffect('barrier', players[data.playerId].x, players[data.playerId].y);
+
+      }
+
+      break;
+
+    case 'curse_cast':
+
+      if (players[data.targetId]) {
+
+        addEffect('curse', players[data.targetId].x, players[data.targetId].y);
+
+      }
+
+      break;
+
+    case 'trap_trigger':
+
+      addEffect('trap_trigger', data.x, data.y);
+
+      break;
+
+      break;
+
+    case 'resurrect':
+
+      if (players[data.playerId]) {
+
+        addEffect('resurrect', players[data.playerId].x, players[data.playerId].y);
+
+      }
+
+      break;
+
+    case 'time_stop':
+
+      timeStopActive = true;
+
+      break;
+
+    case 'execution':
+
+      if (players[data.targetId]) {
+
+        addEffect('execution', players[data.targetId].x, players[data.targetId].y);
+
+      }
+
+      break;
+
+    case 'death_transfer':
+
+      // 紫色闪电效果
+
+      if (players[data.from] && players[data.to]) {
+
+        effects.push({
+
+          type: 'lightning', x1: players[data.from].x, y1: players[data.from].y,
+
+          x2: players[data.to].x, y2: players[data.to].y, life: 30
+
+        });
+
+      }
+
+      break;
+
+    case 'invis':
+
+      if (players[data.playerId]) players[data.playerId].invisible = true;
+
+      break;
+
+    case 'disguise':
+
+      if (players[data.playerId] && players[data.targetId]) {
+
+        players[data.playerId].disguised = {
+
+          name: players[data.targetId].name,
+
+          emoji: players[data.targetId].emoji
+
+        };
+
+      }
+
+      break;
+
+    case 'trap_set':
+
+      // 蓝光闪烁
+
+      effects.push({ type: 'blue_flash', x: data.x, y: data.y, life: 30 });
+
+      break;
+
+    case 'ghost':
+
+      if (data.playerId === myId) showGhostMode();
+
+      break;
+
+    case 're_death':
+
+      if (data.playerId === myId) showGhostMode();
+
+      break;
+
+  }
+
+}
+
+// UI更新
+
+function updateTaskPanel() {
+
+  if (!gameState) return;
+
+  const list = document.getElementById('taskList');
+
+  list.innerHTML = '';
+
+  if (gameState.role === 'impostor') {
+
+    const fake = document.createElement('div');
+
+    fake.className = 'task-item';
+
+    fake.innerHTML = '<span>❓</span><span>未知任务</span>';
+
+    list.appendChild(fake);
+
+  } else {
+
+    myTasks.forEach(tid => {
+
+      const task = tasks.find(t => t.id === tid);
+
+      if (!task) return;
+
+      const div = document.createElement('div');
+
+      div.className = 'task-item' + (task.completed ? ' done' : '');
+
+      const me = players[myId];
+
+      const arrow = task.completed ? '' : (me && me.x < task.x ? '→' : '←');
+
+      div.innerHTML = '<span>' + (task.completed ? '✔' : '◆') + '</span><span>' + task.name + '</span><span class="task-arrow">' + arrow + '</span>';
+
+      list.appendChild(div);
+
+    });
+
+  }
+
+  document.getElementById('chargeValue').textContent = gameState.charge || 0;
+
+  const total = tasks.length;
+
+  const done = tasks.filter(t => t.completed).length;
+
+  document.getElementById('publicProgressBar').style.width = (total > 0 ? (done / total * 100) : 0) + '%';
+
+}
+
+// 补充drawEffect中的lightning和blue_flash
+
+const originalDrawEffect = drawEffect;
+
+drawEffect = function(e) {
+
+  if (e.type === 'lightning') {
+
+    ctx.strokeStyle = '#b300ff';
+
+    ctx.lineWidth = 3;
+
+    ctx.shadowColor = '#b300ff';
+
+    ctx.shadowBlur = 10;
+
+    ctx.beginPath();
+
+    ctx.moveTo(e.x1, e.y1);
+
+    const midX = (e.x1 + e.x2) / 2 + (Math.random() - 0.5) * 50;
+
+    const midY = (e.y1 + e.y2) / 2 + (Math.random() - 0.5) * 50;
+
+    ctx.lineTo(midX, midY);
+
+    ctx.lineTo(e.x2, e.y2);
+
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    return;
+
+  }
+
+  if (e.type === 'blue_flash') {
+
+    const pulse = e.life / 30;
+
+    ctx.fillStyle = `rgba(0,150,255,${pulse * 0.5})`;
+
+    ctx.beginPath();
+
+    ctx.arc(e.x, e.y, 50 * (1 - pulse), 0, Math.PI * 2);
+
+    ctx.fill();
+
+    return;
+
+  }
+
+  originalDrawEffect(e);
+
+};
+
+// 初始化连接
+
+connect();
+
+</script>
+
+</body>
+
+</html>
+
