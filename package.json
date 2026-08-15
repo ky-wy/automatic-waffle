@@ -1,0 +1,26 @@
+{
+  "name": "cyber-impostor",
+  "version": "1.0.0",
+  "description": "赛博朋克Among Us伙伴附着系统 - 多人实时网页游戏",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "websocket",
+    "among-us",
+    "cyberpunk"
+  ],
+  "author": "Cyberpunk Game Studio",
+  "license": "MIT"
+}
